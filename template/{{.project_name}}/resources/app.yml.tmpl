@@ -9,6 +9,24 @@ resources:
           group_name: "users"
       user_api_scopes:
         - "serving.serving-endpoints"
+      # Auto-permissioned resources for the App SP at deploy time.
+      # Without these the App boots fine but runtime calls 403.
+      resources:
+        - name: chat-llm
+          description: "LLM serving endpoint backing the agent."
+          serving_endpoint:
+            name: "${var.llm_endpoint}"
+            permission: CAN_QUERY
+{{- if eq .auth_mode "bearer"}}
+        # Set var.bearer_secret_scope and var.bearer_secret_key (in databricks.yml
+        # or per-target) to a Databricks secret you've already provisioned.
+        - name: bearer-token
+          description: "Inbound A2A bearer token, read at startup."
+          secret:
+            scope: "${var.bearer_secret_scope}"
+            key: "${var.bearer_secret_key}"
+            permission: READ
+{{- end}}
 
   experiments:
     a2a_agent_experiment:

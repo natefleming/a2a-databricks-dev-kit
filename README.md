@@ -31,10 +31,16 @@ bundle plumbing, or registration glue every time.
 3. In the **Configure Git repository** step: paste `https://github.com/natefleming/a2a-databricks-dev-kit`,
    choose **GitHub** as the provider, click **Create**. Public repos need no credential.
 4. Click **Deploy**, pick branch `main` (or a tagged release), and click **Deploy**.
-5. After the app boots, open **Settings → Environment variables** and set at minimum:
-   - `A2A_LLM_ENDPOINT=databricks-claude-sonnet-4-6`
+5. **Add the App's runtime resources** (required — env vars alone aren't enough; the App
+   service principal needs explicit permission on the endpoint and secret):
+   - Apps → your app → **Resources → + Add resource → Serving endpoint**:
+     name `chat-llm`, endpoint `databricks-claude-sonnet-4-6`, permission `CAN_QUERY`
+   - *(prod only, if `A2A_AUTH_MODE=bearer`)* **+ Add resource → Secret**:
+     name `bearer-token`, scope/key of the secret you provisioned, permission `READ`
+6. Open **Settings → Environment variables** and set:
+   - `A2A_LLM_ENDPOINT=databricks-claude-sonnet-4-6` (must match the endpoint above)
    - `A2A_BEARER_SECRET_SCOPE=<your-scope>` and `A2A_BEARER_SECRET_KEY=<your-key>` (prod)
-6. Save and restart. Hit `https://<workspace>/apps/<app-name>/.well-known/agent-card.json` — `200 OK`.
+7. Save and restart. Hit `https://<workspace>/apps/<app-name>/.well-known/agent-card.json` — `200 OK`.
 
 Full walkthrough with screenshots: [docs/INSTALL_UI.md](docs/INSTALL_UI.md).
 

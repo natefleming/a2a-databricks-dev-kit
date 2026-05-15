@@ -74,8 +74,13 @@ What this does:
 - Builds the wheel via `uv build` (declared in `databricks.yml: artifacts.default`)
 - Uploads source files matching `sync.include` to the workspace
 - Creates/updates the App resource defined in `resources/app.yml`
-- Applies UC schema grants to the App's service principal
+- **Auto-grants the App SP `CAN_QUERY` on the LLM serving endpoint** (from the inner
+  `resources:` list under the app). If you chose `auth_mode=bearer` at `bundle init`,
+  also auto-grants `READ` on the bearer-token secret.
 - Creates the MLflow experiment
+
+(This is the key advantage of the bundle path over Apps-from-Git — resource permissions
+are declarative and auto-granted, no UI clicks required.)
 
 ### 6. Run / start the app
 

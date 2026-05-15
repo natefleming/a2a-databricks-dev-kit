@@ -52,6 +52,31 @@ if you go through `chat_model(..., ai_gateway=True)`.
 `ChatOpenAI` yourself. If you do, mirror the `_AIGatewayChatOpenAI._get_request_payload`
 pattern in `src/a2a_databricks/llm.py`.
 
+### `PERMISSION_DENIED` from the LLM when calling `/tasks/send`
+**Cause:** The App service principal isn't granted `CAN_QUERY` on the serving
+endpoint. Setting `A2A_LLM_ENDPOINT=<name>` tells your code which endpoint to call —
+it does NOT grant the App SP permission to call it.
+
+**Fix (UI / Apps-from-Git):**
+Apps → your app → **Resources → + Add resource → Serving endpoint**, set
+permission `CAN_QUERY`, restart the app.
+
+**Fix (bundle):**
+The inner `resources:` list under `apps.a2a_agent_app` in `resources/app.yml`
+should already declare this. If it's missing or `var.llm_endpoint` doesn't match
+`A2A_LLM_ENDPOINT`, fix and `databricks bundle deploy` again.
+
+### `PERMISSION_DENIED` reading the bearer-token secret at startup
+**Cause:** Same shape as above, but for secrets. The App SP needs explicit `READ`
+on the secret scope/key.
+
+**Fix (UI):** Apps → your app → **Resources → + Add resource → Secret**, permission `READ`.
+
+**Fix (bundle):** Uncomment the `bearer-token` block in `resources/app.yml` and set
+`var.bearer_secret_scope` + `var.bearer_secret_key` in `databricks.yml`. (If you
+ran `bundle init` with `auth_mode=bearer`, the secret block is already uncommented;
+just fill the vars.)
+
 ### `401 Unauthorized` on `/tasks/send`
 **Cause:** Either the bearer token is wrong, or the App is using `A2A_AUTH_MODE=bearer`
 but no token has been provisioned.

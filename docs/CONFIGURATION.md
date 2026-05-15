@@ -1,7 +1,20 @@
 # CONFIGURATION
 
-Every runtime knob the agent reads. All vars use the `A2A_` prefix (except the
-Gemini and Databricks SDK ones, which use their library conventions).
+Two distinct layers — keep them straight:
+
+| Layer | What it controls | Lives in |
+|---|---|---|
+| **Environment variables** | What the agent *does* (which endpoint name to call, which secret key to read, which auth mode to enforce) | `app.yaml` env block + workspace UI |
+| **Apps resources** | What the App service principal is *allowed* to do (CAN_QUERY a specific endpoint, READ a specific secret) | `resources/app.yml` (bundle path) or Apps UI → Resources (UI path) |
+
+Setting `A2A_LLM_ENDPOINT=databricks-claude-sonnet-4-6` tells the agent code which
+endpoint to call. It does **not** grant the App SP permission to call it — that
+requires a separate Apps resource declaration with `CAN_QUERY`. Same for
+`A2A_BEARER_SECRET_*` — the env vars tell the code which secret to read; the App
+resource declaration with `READ` actually lets it.
+
+Below: every runtime knob the agent reads. All vars use the `A2A_` prefix (except
+the Gemini and Databricks SDK ones, which use their library conventions).
 
 Precedence, highest wins:
 1. Databricks Apps **Settings → Environment variables** panel

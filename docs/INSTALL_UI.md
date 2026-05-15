@@ -46,6 +46,33 @@ If your workspace admin has enabled "Only allow app deployments from Git" or res
 public Git access, you may need to configure a GitHub access token in **Settings →
 Git providers** first.
 
+### 3a. Add the App's runtime resources (required)
+
+The App service principal does **not** automatically get permission to call serving
+endpoints or read secrets. You have to declare each one as an App resource so
+Databricks auto-grants the SP the right permission. This is a UI-only step on the
+"Deploy from Git" path; the `databricks bundle init` path handles it declaratively
+in `resources/app.yml`.
+
+In the app's page, click **Resources → + Add resource** and add at minimum:
+
+**Serving endpoint** (always):
+- Type: **Serving endpoint**
+- Resource key (any name): `chat-llm`
+- Endpoint: `databricks-claude-sonnet-4-6` (or whatever you'll set `A2A_LLM_ENDPOINT` to)
+- Permission: `CAN_QUERY`
+
+**Secret** (only if `A2A_AUTH_MODE=bearer` in step 4 below):
+- Type: **Secret**
+- Resource key: `bearer-token`
+- Scope: the Databricks secret scope holding the token
+- Key: the secret key
+- Permission: `READ`
+
+If you forget this step, the App will boot fine but the first `POST /tasks/send` will
+fail with `PERMISSION_DENIED` when the agent tries to call the LLM, and bearer-mode
+auth will crash at startup when the agent tries to read the secret.
+
 ### 4. Set environment variables
 
 Once the app is running (~2 minutes for first deploy), open **Settings → Environment

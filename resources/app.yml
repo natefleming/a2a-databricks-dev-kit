@@ -1,8 +1,15 @@
 # Databricks App resource for the A2A agent.
 #
-# `source_code_path: ../.` means the bundle ships the whole repo (app.yaml at root,
-# requirements.txt at root, src/ folder) as the App's source — exactly what the
-# Apps-from-Git path uses too. One layout, two deploy mechanisms.
+# `source_code_path: ../.` means the bundle ships the whole repo (app.yaml at
+# root, requirements.txt at root, src/ folder) as the App's source — exactly
+# what the Apps-from-Git path uses too. One layout, two deploy mechanisms.
+#
+# The inner `resources:` list under `apps.a2a_agent_app` is what gives the App
+# service principal auto-permissioned access to everything it needs at runtime:
+#   - the LLM serving endpoint (CAN_QUERY)
+#   - the bearer-token secret (READ), if auth_mode=bearer
+# Without these declarations the App boots fine but the first LLM call or
+# secret read fails with 403 PERMISSION_DENIED.
 
 resources:
   apps:
@@ -15,16 +22,26 @@ resources:
           group_name: "users"
       user_api_scopes:
         - "serving.serving-endpoints"
+      resources:
+        - name: chat-llm
+          description: "LLM serving endpoint backing the agent."
+          serving_endpoint:
+            name: "${var.llm_endpoint}"
+            permission: CAN_QUERY
+        # Uncomment when auth_mode=bearer and you've provisioned the secret:
+        # - name: bearer-token
+        #   description: "Inbound A2A bearer token, read at startup."
+        #   secret:
+        #     scope: "${var.bearer_secret_scope}"
+        #     key: "${var.bearer_secret_key}"
+        #     permission: READ
 
   experiments:
     a2a_agent_experiment:
       name: "/Users/${workspace.current_user.userName}/a2a-agents-${var.agent_name}-${bundle.target}"
 
   # UC schema creation is opt-in. The reference agent doesn't use UC, and most
-  # workspaces don't grant CREATE SCHEMA to ordinary users. If you want the
-  # bundle to create the schema and grant the App SP read access, copy this
-  # block into `resources/app.yml` (and ensure the deploying user has
-  # CREATE SCHEMA on the catalog):
+  # workspaces don't grant CREATE SCHEMA to ordinary users. To enable, uncomment:
   #
   # schemas:
   #   a2a_agent_schema:
