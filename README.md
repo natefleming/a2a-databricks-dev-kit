@@ -19,12 +19,18 @@ bundle plumbing, or registration glue every time.
 
 ## Two ways to install
 
-### Path 1 — Databricks Apps "Custom from Git" (recommended for first-time users)
+### Path 1 — Databricks Apps "Deploy from Git" (UI-driven, simplest for first-time users)
+
+> **Status:** Documented per the official Databricks docs and the Feb 2026 release notes
+> ("Deploy Databricks Apps Directly from Git", GA). Not yet personally re-verified end-to-end
+> against a live workspace — if a step doesn't match the UI in front of you, treat the docs
+> as authoritative and please file an issue.
 
 1. In your Databricks workspace, click **Apps → Create app → Custom app**.
 2. Name it (e.g., `my-a2a-agent`) and click **Create**.
-3. Click **Deploy → Configure Git source** and paste this repo's URL.
-4. Pick branch `main` (or a tagged release) and click **Deploy**.
+3. In the **Configure Git repository** step: paste `https://github.com/natefleming/a2a-databricks-dev-kit`,
+   choose **GitHub** as the provider, click **Create**. Public repos need no credential.
+4. Click **Deploy**, pick branch `main` (or a tagged release), and click **Deploy**.
 5. After the app boots, open **Settings → Environment variables** and set at minimum:
    - `A2A_LLM_ENDPOINT=databricks-claude-sonnet-4-6`
    - `A2A_BEARER_SECRET_SCOPE=<your-scope>` and `A2A_BEARER_SECRET_KEY=<your-key>` (prod)
@@ -32,7 +38,7 @@ bundle plumbing, or registration glue every time.
 
 Full walkthrough with screenshots: [docs/INSTALL_UI.md](docs/INSTALL_UI.md).
 
-### Path 2 — `databricks bundle init` (IaC teams)
+### Path 2 — `databricks bundle init` (IaC teams; ✅ verified end-to-end on FEVM)
 
 ```bash
 databricks bundle init https://github.com/natefleming/a2a-databricks-dev-kit

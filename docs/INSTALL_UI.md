@@ -21,15 +21,24 @@ Fill in:
 
 Click **Create**. You land on the app's status page.
 
-### 2. Configure the Git source
+### 2. Configure the Git repository
 
-Click **Deploy**. The first deploy prompts you to pick a source:
-- **Git source** → paste `https://github.com/natefleming/a2a-databricks-dev-kit`
-- **Branch**: `main` for latest, or a tag like `v1.0.0` for a pinned release
+At create time (or under **Settings → Source**) the workspace will show a
+**Configure Git repository** step. Fill in:
+
+- **Repository URL** → `https://github.com/natefleming/a2a-databricks-dev-kit`
+- **Provider** → `GitHub`
+- Click **Create** (or **Save**). Public repos need no credential.
+
+Then click **Deploy**:
+
+- **Branch** → `main` for latest, or a tag like `v1.0.0` for a pinned release
 - Click **Deploy**
 
-The platform clones the repo, reads `app.yaml`, runs `pip install -r requirements.txt`,
-then executes the `command` block. Watch progress on the **Logs** tab.
+The platform fetches from the chosen Git ref, reads `app.yaml`, runs
+`pip install -r requirements.txt`, then executes the `command` block. Watch
+progress on the **Logs** tab. (This flow is GA as of the Feb 2026 release notes;
+the older "drop source as a workspace file" path still works too.)
 
 ### 3. (If your workspace has a Git policy) Add the GitHub PAT
 
