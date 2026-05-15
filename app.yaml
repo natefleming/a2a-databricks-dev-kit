@@ -1,9 +1,15 @@
 command:
   # Use shell-form so $DATABRICKS_APP_PORT expands. List-form passes the literal
   # string to uvicorn and crashes with "not a valid integer."
+  #
+  # PYTHONPATH=src is required for the Apps-from-Git path: Apps clones the repo
+  # and runs `pip install -r requirements.txt`, which does NOT install our own
+  # source as a package, so the `app` package at src/app/ isn't importable
+  # without adding src/ to sys.path. In the bundle path the wheel installs `app`
+  # for us, but PYTHONPATH=src is still harmless there.
   - "sh"
   - "-c"
-  - "uvicorn app.main:app --host 0.0.0.0 --port ${DATABRICKS_APP_PORT:-8000}"
+  - "PYTHONPATH=src uvicorn app.main:app --host 0.0.0.0 --port ${DATABRICKS_APP_PORT:-8000}"
 
 env:
   - name: A2A_AGENT_NAME

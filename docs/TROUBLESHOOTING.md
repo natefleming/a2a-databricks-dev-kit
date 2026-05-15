@@ -125,6 +125,19 @@ resolving against 3.12+ can pull in wheels that don't exist for 3.11 at deploy.
 **Fix:** Install Python 3.11 via `uv` and let the `.python-version` file at the
 repo root pick it up: `uv python install 3.11 && uv sync`.
 
+### App crashes at startup with `ModuleNotFoundError: No module named 'app'`
+**Cause:** You're on the Apps-from-Git path. Apps clones your repo and runs
+`pip install -r requirements.txt`, which installs the listed dependencies but
+**does not install the project's own source as a package**. The `app` package
+sitting at `src/app/` isn't on Python's import path.
+
+(The bundle path doesn't hit this because `uv build` creates a wheel that
+Apps installs, exposing the `app` package.)
+
+**Fix:** The kit's `app.yaml` runs uvicorn under `sh -c "PYTHONPATH=src uvicorn ..."`.
+If you've customized the command, make sure `PYTHONPATH=src` is preserved, or
+move your agent to `app/` at the repo root.
+
 ### App crashes at startup: `Error: Invalid value for '--port': '${DATABRICKS_APP_PORT:-8000}' is not a valid integer.`
 **Cause:** Databricks Apps' list-form `command:` is exec'd directly without a shell,
 so `${VAR}` isn't expanded — it's passed to uvicorn as a literal string.
