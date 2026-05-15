@@ -24,7 +24,7 @@ Click **Create**. You land on the app's status page.
 ### 2. Configure the Git source
 
 Click **Deploy**. The first deploy prompts you to pick a source:
-- **Git source** → paste `https://github.com/<org>/a2a-databricks-dev-kit`
+- **Git source** → paste `https://github.com/natefleming/a2a-databricks-dev-kit`
 - **Branch**: `main` for latest, or a tag like `v1.0.0` for a pinned release
 - Click **Deploy**
 

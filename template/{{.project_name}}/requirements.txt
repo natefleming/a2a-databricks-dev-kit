@@ -1,7 +1,7 @@
 # Databricks Apps auto-installs from this file at deploy time.
 # Keep in sync with pyproject.toml.
 
-a2a-databricks-dev-kit @ git+https://github.com/<org>/a2a-databricks-dev-kit.git@main
+a2a-databricks-dev-kit @ git+https://github.com/natefleming/a2a-databricks-dev-kit.git@main
 a2a-sdk>=1.0,<1.1
 fastapi>=0.115,<0.120
 uvicorn[standard]>=0.30,<0.40

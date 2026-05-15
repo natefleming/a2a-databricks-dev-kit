@@ -15,7 +15,7 @@ resources declaratively. The end-user experience is one `bundle init` command, o
 ### 1. Init the project
 
 ```bash
-databricks bundle init https://github.com/<org>/a2a-databricks-dev-kit
+databricks bundle init https://github.com/natefleming/a2a-databricks-dev-kit
 ```
 
 You'll be prompted for:

@@ -35,7 +35,7 @@ Full walkthrough with screenshots: [docs/INSTALL_UI.md](docs/INSTALL_UI.md).
 ### Path 2 — `databricks bundle init` (IaC teams)
 
 ```bash
-databricks bundle init https://github.com/<org>/a2a-databricks-dev-kit
+databricks bundle init https://github.com/natefleming/a2a-databricks-dev-kit
 # answers a few prompts: agent name, catalog, schema, LLM endpoint, auth mode
 cd <agent-name>
 databricks bundle deploy

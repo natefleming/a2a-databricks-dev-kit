@@ -19,7 +19,7 @@ agent that's discoverable in Gemini Enterprise. For deeper customization, head t
 
 ### 2. Point at this repo
 - On the new app's page, click **Deploy → Configure Git source**
-- Paste: `https://github.com/<org>/a2a-databricks-dev-kit`
+- Paste: `https://github.com/natefleming/a2a-databricks-dev-kit`
 - Branch: `main` (or pick a tagged release like `v1.0.0`)
 - Click **Deploy**
 
@@ -53,7 +53,7 @@ in your browser. You should see a JSON document starting with:
 ### 6. Register in Gemini Enterprise (optional but recommended)
 ```bash
 gcloud auth application-default login
-git clone https://github.com/<org>/a2a-databricks-dev-kit
+git clone https://github.com/natefleming/a2a-databricks-dev-kit
 cd a2a-databricks-dev-kit
 uv sync --extra gemini
 AGENT_URL=https://<workspace>.cloud.databricks.com/apps/my-a2a-agent \

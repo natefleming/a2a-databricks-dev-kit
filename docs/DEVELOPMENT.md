@@ -17,7 +17,7 @@ expected output, and a "what just happened" paragraph.
 
 ### Commands
 ```bash
-git clone https://github.com/<org>/a2a-databricks-dev-kit
+git clone https://github.com/natefleming/a2a-databricks-dev-kit
 cd a2a-databricks-dev-kit
 uv sync                                 # installs all deps into .venv/
 databricks auth login --host https://<workspace>.cloud.databricks.com \
