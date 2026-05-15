@@ -18,7 +18,7 @@ resources:
 
   experiments:
     a2a_agent_experiment:
-      name: "/Shared/a2a-agents/${var.agent_name}-${bundle.target}"
+      name: "/Users/${workspace.current_user.userName}/a2a-agents-${var.agent_name}-${bundle.target}"
 
   schemas:
     a2a_agent_schema:

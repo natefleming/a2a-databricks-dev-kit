@@ -12,7 +12,9 @@ resources:
 
   experiments:
     a2a_agent_experiment:
-      name: "/Shared/a2a-agents/${var.agent_name}-${bundle.target}"
+      # Per-user path because /Shared/a2a-agents/... requires the parent
+      # directory to pre-exist and many workspaces don't grant CREATE there.
+      name: "/Users/${workspace.current_user.userName}/a2a-agents-${var.agent_name}-${bundle.target}"
 
   schemas:
     a2a_agent_schema:

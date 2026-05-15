@@ -75,6 +75,30 @@ IdP supports OAuth 2.0 token introspection (RFC 7662). If not, replace
 
 **Fix:** `databricks --version` → upgrade if needed: `brew upgrade databricks/tap/databricks`.
 
+### Deploy errors with `App name must contain only lowercase letters, numbers, and dashes`
+**Cause:** The `project_name` you gave to `bundle init` contains an underscore. The
+Databricks Apps API rejects underscores in app names.
+
+**Fix:** Re-init with a hyphen-only name (e.g. `my-a2a-agent`, not `my_a2a_agent`). The
+template schema enforces this on fresh inits; older renders may still have an
+underscore in `databricks.yml` — edit the `agent_name` default to use hyphens.
+
+### Deploy errors with `Parent directory does not exist: /Shared/...`
+**Cause:** Older versions of the kit declared the MLflow experiment at
+`/Shared/a2a-agents/...`, which requires that parent directory to pre-exist with
+CREATE permission for your user.
+
+**Fix:** Newer renders use `/Users/${workspace.current_user.userName}/a2a-agents-...`.
+Either re-init from a current template, or edit `resources/app.yml` to put the
+experiment under your user path.
+
+### Deploy errors with `Workspace ... has reached the maximum limit of 300 apps`
+**Cause:** Environmental, not a kit bug. The target workspace has hit Databricks' per-
+workspace app cap.
+
+**Fix:** Delete an unused app (`databricks apps list --profile <p>` → pick one →
+`databricks apps delete <name>`), or pick a different workspace.
+
 ### `requirements.txt` and `pyproject.toml` drift
 **Cause:** You added a dep to `pyproject.toml` but forgot to regen `requirements.txt`.
 

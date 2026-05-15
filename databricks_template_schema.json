@@ -2,10 +2,10 @@
   "properties": {
     "project_name": {
       "type": "string",
-      "default": "my_a2a_agent",
-      "description": "Project (and App) name. Lowercase, hyphens or underscores, no spaces.",
+      "default": "my-a2a-agent",
+      "description": "Project (and App) name. Lowercase + hyphens only (no underscores — the Databricks Apps API rejects underscores).",
       "order": 1,
-      "pattern": "^[a-z][a-z0-9_-]*$"
+      "pattern": "^[a-z][a-z0-9-]*$"
     },
     "agent_description": {
       "type": "string",
