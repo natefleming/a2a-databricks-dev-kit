@@ -38,6 +38,47 @@ def test_card_anonymous_advertises_none(monkeypatch: pytest.MonkeyPatch) -> None
 
 
 @pytest.mark.unit
+def test_card_emits_a2a_v1_required_fields(app_config_dev: AppConfig) -> None:
+    """Gemini Enterprise reads these flat fields — they MUST exist."""
+    card = AgentCard.for_config(
+        app_config_dev,
+        endpoint_url="https://example.com/apps/x",
+        skills=[AgentSkill(id="chat", name="Chat", description="x")],
+    )
+    payload = json.loads(card.model_dump_json())
+
+    assert payload["protocol_version"] == "v1.0"
+    assert "capabilities" in payload
+    assert payload["capabilities"]["streaming"] is True  # default
+    assert payload["capabilities"]["push_notifications"] is False
+    assert payload["api"]["authentication"]["type"] == "bearer"
+    assert payload["api"]["authentication"]["scheme"] == "Bearer"
+
+
+@pytest.mark.unit
+def test_card_oauth_emits_flat_oauth_auth(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("A2A_AUTH_MODE", "oauth_m2m")
+    monkeypatch.setenv("A2A_ENV", "dev")
+    monkeypatch.setenv("A2A_OAUTH_AUDIENCE", "my-agent")
+    monkeypatch.setenv("A2A_OAUTH_ISSUER", "https://idp.example.com")
+    config = AppConfig()
+    card = AgentCard.for_config(config, endpoint_url="https://example.com/apps/x")
+    payload = json.loads(card.model_dump_json())
+    assert payload["api"]["authentication"]["type"] == "oauth"
+
+
+@pytest.mark.unit
+def test_card_capabilities_respect_config(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("A2A_CAPABILITY_STREAMING", "false")
+    monkeypatch.setenv("A2A_CAPABILITY_PUSH_NOTIFICATIONS", "true")
+    config = AppConfig()
+    card = AgentCard.for_config(config, endpoint_url="https://example.com/apps/x")
+    payload = json.loads(card.model_dump_json())
+    assert payload["capabilities"]["streaming"] is False
+    assert payload["capabilities"]["push_notifications"] is True
+
+
+@pytest.mark.unit
 def test_card_skills_round_trip(app_config_dev: AppConfig) -> None:
     skills = [
         AgentSkill(

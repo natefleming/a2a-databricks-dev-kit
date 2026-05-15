@@ -43,6 +43,13 @@ Precedence, highest wins:
 | `A2A_CATALOG` | `main` | when reading UC | UC catalog the agent reads/writes. |
 | `A2A_SCHEMA` | `a2a_agents` | when reading UC | UC schema for agent artifacts. |
 
+## A2A capabilities (advertised in the Agent Card)
+
+| Variable | Default | Description |
+|---|---|---|
+| `A2A_CAPABILITY_STREAMING` | `true` | Whether `/tasks/sendSubscribe` (SSE) is supported. Set to `false` only if you remove the streaming handler. |
+| `A2A_CAPABILITY_PUSH_NOTIFICATIONS` | `false` | Whether the agent supports push-notification callbacks for long-running tasks. Default `false`; the kit doesn't ship a push-notification handler. |
+
 ## Databricks workspace auth
 
 These are read by `databricks-sdk` directly and only needed for local dev:
@@ -60,7 +67,9 @@ On Databricks Apps these are injected automatically — leave them empty in `app
 | Variable | Default | Description |
 |---|---|---|
 | `GEMINI_PROJECT_ID` | `""` | GCP project running Gemini Enterprise. |
-| `GEMINI_LOCATION` | `global` | Discovery Engine location. |
+| `GEMINI_LOCATION` | `global` | Discovery Engine location (`global`, `us`, or `eu`). |
+| `GEMINI_APP_ID` | `""` | engineId of an existing Gemini Enterprise app. Create one in the Cloud console before running the notebook. |
+| `GEMINI_ASSISTANT_ID` | `default_assistant` | Assistant scope inside the app. Almost always the default. |
 | `GEMINI_COLLECTION` | `default_collection` | Discovery Engine collection ID. |
 | `AGENT_URL` | — | Public Databricks Apps URL of the agent. |
 

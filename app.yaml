@@ -33,7 +33,17 @@ env:
     value: ""
   - name: A2A_OAUTH_ISSUER
     value: ""
+  - name: A2A_CAPABILITY_STREAMING
+    value: "true"
+  - name: A2A_CAPABILITY_PUSH_NOTIFICATIONS
+    value: "false"
   - name: GEMINI_PROJECT_ID
     value: ""
   - name: GEMINI_LOCATION
     value: "global"
+  - name: GEMINI_APP_ID
+    value: ""
+  - name: GEMINI_ASSISTANT_ID
+    value: "default_assistant"
+  - name: GEMINI_COLLECTION
+    value: "default_collection"

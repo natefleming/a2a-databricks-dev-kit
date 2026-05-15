@@ -8,116 +8,186 @@ agents can delegate to it.
 
 - Your agent is **hosted on Databricks**. Google never sees the runtime — only the
   Agent Card URL.
-- Gemini Enterprise's **Agent Registry** stores the Agent Card + endpoint URL.
-- When a Gemini user (or another Gemini-hosted agent) delegates to your agent,
-  Gemini's outbound gateway calls your `/tasks/send` with an OAuth-bridged bearer.
-- The registration step is a one-time POST per (agent, project) pair. Re-run to
-  update the Agent Card.
+- Google's **Agent Registry** (a sub-resource of the Discovery Engine API) stores the
+  Agent Card + endpoint URL, scoped to a specific Gemini Enterprise **app** (engine).
+- When a Gemini user delegates a task to your agent, Gemini's outbound gateway calls
+  your `/tasks/send` with the credentials you configure on Google's side.
+- Registration is a one-time POST per (agent, app) pair. Re-run the notebook to update.
+
+## Required Google-side concepts
+
+| Concept | What it is | Where you set it |
+|---|---|---|
+| **Project** | Your GCP project | `GEMINI_PROJECT_ID` |
+| **Location** | `global`, `us`, or `eu` | `GEMINI_LOCATION` |
+| **Collection** | Discovery Engine collection (usually `default_collection`) | `GEMINI_COLLECTION` |
+| **Engine / App** | A Gemini Enterprise "app" — the conversational surface users interact with. Created in Cloud console before registration. | `GEMINI_APP_ID` |
+| **Assistant** | A scope inside an app (usually `default_assistant`) | `GEMINI_ASSISTANT_ID` |
+| **Agent** | Your registered A2A agent under an assistant | derived from your Agent Card `name` |
+
+Full API path:
+```
+projects/{P}/locations/{L}/collections/{C}/engines/{APP_ID}/assistants/{A}/agents
+```
 
 ## Prerequisites
 
-1. Your agent is deployed and reachable. Confirm:
+1. **Agent is deployed and reachable:**
    ```bash
    curl https://<workspace>/apps/<agent>/.well-known/agent-card.json   # → 200
    ```
-2. You have a Google Cloud project with the **Discovery Engine API** enabled:
+
+2. **A Gemini Enterprise app exists in your project.** In the Cloud console:
+   *Gemini Enterprise → Apps → Create app*. Copy the `engineId` — that's
+   `GEMINI_APP_ID`. (You can also create one via the Discovery Engine API
+   `engines.create` endpoint, but UI is faster for first-time setup.)
+
+3. **APIs enabled:**
    ```bash
    gcloud services enable discoveryengine.googleapis.com --project=<your-project>
    ```
-3. You have one of these IAM roles on the project:
-   - `roles/discoveryengine.editor` (broad)
-   - `roles/discoveryengine.agentRegistryEditor` (narrow, recommended)
-4. You've authenticated locally:
+
+4. **IAM:** the principal running the registration needs one of:
+   - `roles/discoveryengine.editor`
+   - `roles/discoveryengine.agentspaceAdmin` (Gemini Enterprise admin)
+   - A custom role with `discoveryengine.agents.create`, `discoveryengine.agents.get`,
+     and `discoveryengine.agents.patch`
+
+5. **Auth locally:**
    ```bash
    gcloud auth application-default login
    gcloud config set project <your-project>
    ```
-5. You've installed the kit's Gemini extras:
+
+6. **Install Gemini extras:**
    ```bash
    uv sync --extra gemini
    ```
 
 ## Step-by-step
 
-### 1. Confirm the Agent Card is good
-The card you register is the card Gemini will show users. Make sure:
-- `name`, `description`, `version` are user-facing-ready
-- `skills[]` lists every capability your agent offers, with examples
-- `security_schemes` matches your `A2A_AUTH_MODE`
+### 1. Confirm the Agent Card
 
-Edit `src/app/agent.py:SKILLS` and `app.yaml`'s `A2A_AGENT_*` vars to tune.
+The card you register is the card Gemini will display. Make sure:
+- `name`, `description`, `version` are user-facing-ready
+- `skills[]` lists every capability with examples
+- `capabilities` matches what your agent actually supports
+  (set `A2A_CAPABILITY_STREAMING` / `A2A_CAPABILITY_PUSH_NOTIFICATIONS` in `app.yaml`)
+- `api.authentication.type` matches `A2A_AUTH_MODE` (auto-emitted)
+
+Pull the live card to verify:
+```bash
+curl https://<workspace>/apps/<agent>/.well-known/agent-card.json | jq
+```
 
 ### 2. Run the registration notebook
 
 ```bash
 AGENT_URL=https://<workspace>/apps/<agent> \
 GEMINI_PROJECT_ID=<your-project> \
+GEMINI_APP_ID=<engineId-from-step-2> \
+GEMINI_LOCATION=global \
 uv run python notebooks/register_in_gemini.py
 ```
 
-(Or run it as a notebook in your workspace, setting widgets accordingly.)
+Or run it as a notebook in your workspace, setting widgets to the same values.
 
-Output:
+Expected output:
 ```
-Agent URL:        https://<workspace>/apps/my-a2a-agent
-Gemini project:   my-gcp-project
-Gemini location:  global
-Bearer present:   true
 ✔ Fetched Agent Card for: my-a2a-agent  (version 0.1.0)
-✔ Acquired ADC token for project: my-gcp-project
+  protocolVersion: v1.0
+  API URL:         https://<workspace>/apps/my-a2a-agent/
+  Auth type:       bearer
+  Capabilities:    {'streaming': True, 'push_notifications': False, ...}
+✔ Acquired ADC token (project hint: my-gcp-project)
 ✔ Built agent resource payload
-HTTP 200
+POST https://discoveryengine.googleapis.com/v1alpha/projects/.../agents?agentId=my-a2a-agent
+  HTTP 200
 ✔ Registered agent: my-a2a-agent
-  Console URL: https://console.cloud.google.com/...
+  Console URL: https://console.cloud.google.com/gen-app-builder/...
 ```
 
-### 3. Verify in the Gemini Enterprise console
+### 3. Configure credentials on Google's side
 
-Open the console URL printed by the notebook. You should see your agent in the Agent
-Registry, with the Agent Card preview and a "Test" button.
+This step is **necessary** unless your agent runs with `A2A_AUTH_MODE=none` in a
+demo environment. Without it, Gemini's outbound gateway can't authenticate to your
+agent and calls will fail with 401.
 
-Click **Test**, type a prompt, and confirm a response comes back. Latency includes
-the cross-cloud hop (Gemini → Databricks → LLM → back), so expect ~2-5s.
+In the Cloud console:
+1. Navigate to **Gemini Enterprise → Apps → `<your-app>` → Agents → `<your-agent>`**
+2. Open **Settings → Credentials**
+3. Pick the type matching your `A2A_AUTH_MODE`:
+   - **Bearer** → paste the same token you stored in your Databricks secret
+   - **OAuth M2M** → paste the `client_id` / `client_secret` and the token URL
+4. Save
 
-### 4. Re-register after Agent Card changes
+Gemini caches these credentials in Secret Manager and injects them on every outbound
+call to your agent.
 
-If you edit `SKILLS` or auth mode, re-run the notebook. It uses `PATCH` if the agent
-already exists (409 on `POST`), so updates are idempotent.
+### 4. Verify in the Gemini Enterprise console
 
-### 5. Deregister
+Open the console URL from step 2. You should see:
+- Your agent in the Agent Registry
+- The Agent Card preview (skills, description, version)
+- A **Test** button
+
+Click **Test**, type a prompt, confirm a response. Cross-cloud latency is ~2-5s.
+
+### 5. Re-register after Agent Card changes
+
+If you edit `SKILLS`, capabilities, or auth, re-run the notebook. The notebook
+auto-detects existing agents (409 conflict) and converts to PATCH for idempotent
+updates.
+
+### 6. Deregister
 
 ```bash
 gcloud alpha discovery-engine agents delete <agent-id> \
   --project=<your-project> \
-  --location=global \
-  --collection=default_collection
+  --location=<your-location> \
+  --collection=default_collection \
+  --engine=<your-app-id> \
+  --assistant=default_assistant
 ```
 
 Or use the registry UI's delete button.
 
 ## Outbound auth: how Gemini calls your endpoint
 
-Gemini Enterprise's outbound gateway uses the **`securitySchemes`** advertised in
-your Agent Card to figure out what credentials to send.
+Gemini reads `api.authentication.type` in your Agent Card and uses the credentials
+you stored in step 3.
 
-| Your `A2A_AUTH_MODE` | What Gemini sends | What you need to configure on Gemini's side |
+| `A2A_AUTH_MODE` | What Gemini sends | What you configure on Google's side |
 |---|---|---|
-| `bearer` | `Authorization: Bearer <your-token>` | Store the same token in Gemini's Agent Registry "credentials" field. Gemini will retrieve it from Secret Manager and inject on each call. |
-| `oauth_m2m` | `Authorization: Bearer <OIDC token>` minted via client-credentials flow | Configure the client_id/client_secret in Gemini's Agent Registry credentials. |
-| `none` | No auth header (will be rejected by your agent unless `A2A_ENV != prod`) | Only useful for demos. |
+| `bearer` | `Authorization: Bearer <stored-token>` | Paste the token in Gemini's Agent Credentials UI |
+| `oauth_m2m` | `Authorization: Bearer <minted-OIDC-token>` | Paste `client_id` / `client_secret` / token URL |
+| `none` | No auth header | Demo only — your agent rejects unless `A2A_ENV != prod` |
 
-The Gemini Enterprise Agent Registry UI walks you through credential setup the first
-time you create an agent.
+There's no Google-signed identity JWT — Gemini does not assert its own identity to
+your agent. It uses credentials you give it.
 
 ## Troubleshooting
 
-- **`403: ApiNotEnabled`** — enable Discovery Engine API on the project.
-- **`403: PermissionDenied`** — check IAM; you need `discoveryengine.editor` or finer.
-- **`404` on POST** — `GEMINI_LOCATION` likely wrong; try `global`.
-- **`409: AlreadyExists`** — the notebook auto-converts to PATCH; if it still fails,
-  delete the agent and re-run.
-- **Agent registered but Gemini can't invoke it** — check your agent's Apps logs for
-  `401` lines; you probably need to load the bearer token into Gemini's credentials.
-- **"Agent Card URL not reachable"** — your App is behind workspace auth; you need to
-  make it accessible to the Gemini Enterprise outbound gateway. See the App's
-  Sharing settings.
+- **`403: API not enabled`** — `gcloud services enable discoveryengine.googleapis.com`
+- **`403: PermissionDenied`** — your principal needs `discoveryengine.editor` or finer
+- **`404` on the registration POST** — usually `GEMINI_APP_ID` is wrong. Confirm the
+  app exists: `gcloud alpha discovery-engine engines list --project=<p> --location=global`
+- **`400: Invalid agent definition`** — Agent Card is missing a required field. Common
+  causes: missing `protocolVersion`, missing `capabilities`, malformed `api.authentication`.
+  Pull the live card with curl and check.
+- **`409: AlreadyExists`** — notebook auto-converts to PATCH. If you see this in logs,
+  the update path was used; check the next status line.
+- **Agent registered but Gemini's test call returns `401`** — credentials not configured
+  on Google's side. Go back to step 3.
+- **`504: Gateway Timeout`** — Gemini's outbound gateway timed out waiting for your
+  agent. Either your agent is too slow for sync responses (>30s) or it's not reachable.
+  Switch to streaming via `A2A_CAPABILITY_STREAMING=true` and `/tasks/sendSubscribe`.
+
+## What the registration does NOT do
+
+- It does **not** make your agent reachable from the public internet — that's the
+  Databricks Apps proxy's job.
+- It does **not** verify your domain or check TLS certs at registration time (only at
+  invocation time).
+- It does **not** push the Agent Card; it pulls. If your card changes, re-run the
+  notebook to refresh Gemini's cached copy.

@@ -60,6 +60,9 @@ class AppConfig(BaseSettings):
     catalog: str = Field(default="main")
     schema_name: str = Field(default="a2a_agents", alias="A2A_SCHEMA")
 
+    capability_streaming: bool = Field(default=True)
+    capability_push_notifications: bool = Field(default=False)
+
     @model_validator(mode="after")
     def _reject_anonymous_in_prod(self) -> "AppConfig":
         if self.auth_mode == AuthMode.NONE and self.env == Environment.PROD:
