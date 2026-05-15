@@ -92,6 +92,29 @@ CREATE permission for your user.
 Either re-init from a current template, or edit `resources/app.yml` to put the
 experiment under your user path.
 
+### App crashes at startup: `Error: Invalid value for '--port': '${DATABRICKS_APP_PORT:-8000}' is not a valid integer.`
+**Cause:** Databricks Apps' list-form `command:` is exec'd directly without a shell,
+so `${VAR}` isn't expanded — it's passed to uvicorn as a literal string.
+
+**Fix:** Use shell-form to force expansion (this is the kit's default since the
+deploy verification on FEVM):
+```yaml
+command:
+  - "sh"
+  - "-c"
+  - "uvicorn app.main:app --host 0.0.0.0 --port ${DATABRICKS_APP_PORT:-8000}"
+```
+
+### Deploy errors with `User does not have CREATE SCHEMA on Catalog ...`
+**Cause:** The deploying user doesn't have `CREATE SCHEMA` on the chosen catalog.
+Most FEVM and field workspaces don't grant this by default.
+
+**Fix:** The kit ships the schema declaration commented out for this reason. The
+reference agent doesn't use UC anyway. If you want a schema:
+- Use a catalog where you have `CREATE SCHEMA` (often `workspace.default`), or
+- Pre-create the schema in a SQL editor, then uncomment **only the grants** in
+  `resources/app.yml`, replacing the schema-creation block.
+
 ### Deploy errors with `Workspace ... has reached the maximum limit of 300 apps`
 **Cause:** Environmental, not a kit bug. The target workspace has hit Databricks' per-
 workspace app cap.

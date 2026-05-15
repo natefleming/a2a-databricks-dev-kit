@@ -16,13 +16,16 @@ resources:
       # directory to pre-exist and many workspaces don't grant CREATE there.
       name: "/Users/${workspace.current_user.userName}/a2a-agents-${var.agent_name}-${bundle.target}"
 
-  schemas:
-    a2a_agent_schema:
-      catalog_name: "${var.catalog}"
-      name: "${var.schema}"
-      grants:
-        - principal: "${resources.apps.a2a_agent_app.service_principal_client_id}"
-          privileges:
-            - USE_SCHEMA
-            - SELECT
-            - EXECUTE
+  # UC schema creation is opt-in. The reference agent doesn't use UC, and most
+  # workspaces don't grant CREATE SCHEMA to ordinary users. To enable, uncomment:
+  #
+  # schemas:
+  #   a2a_agent_schema:
+  #     catalog_name: "${var.catalog}"
+  #     name: "${var.schema}"
+  #     grants:
+  #       - principal: "${resources.apps.a2a_agent_app.service_principal_client_id}"
+  #         privileges:
+  #           - USE_SCHEMA
+  #           - SELECT
+  #           - EXECUTE

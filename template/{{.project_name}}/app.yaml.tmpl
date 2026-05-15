@@ -1,10 +1,9 @@
 command:
-  - "uvicorn"
-  - "app.main:app"
-  - "--host"
-  - "0.0.0.0"
-  - "--port"
-  - "${DATABRICKS_APP_PORT:-8000}"
+  # Use shell-form so $DATABRICKS_APP_PORT expands. List-form passes the literal
+  # string to uvicorn and crashes with "not a valid integer."
+  - "sh"
+  - "-c"
+  - "uvicorn app.main:app --host 0.0.0.0 --port ${DATABRICKS_APP_PORT:-8000}"
 
 env:
   - name: A2A_AGENT_NAME
