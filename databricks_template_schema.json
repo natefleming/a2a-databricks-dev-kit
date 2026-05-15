@@ -1,0 +1,43 @@
+{
+  "properties": {
+    "project_name": {
+      "type": "string",
+      "default": "my_a2a_agent",
+      "description": "Project (and App) name. Lowercase, hyphens or underscores, no spaces.",
+      "order": 1,
+      "pattern": "^[a-z][a-z0-9_-]*$"
+    },
+    "agent_description": {
+      "type": "string",
+      "default": "An A2A-protocol agent running on Databricks",
+      "description": "One-line description for the Agent Card",
+      "order": 2
+    },
+    "catalog_name": {
+      "type": "string",
+      "default": "main",
+      "description": "Unity Catalog for agent artifacts",
+      "order": 3
+    },
+    "schema_name": {
+      "type": "string",
+      "default": "a2a_agents",
+      "description": "Schema for agent artifacts",
+      "order": 4
+    },
+    "llm_endpoint": {
+      "type": "string",
+      "default": "databricks-claude-sonnet-4-6",
+      "description": "Databricks-hosted LLM serving endpoint backing the agent",
+      "order": 5
+    },
+    "auth_mode": {
+      "type": "string",
+      "default": "bearer",
+      "description": "Inbound auth: bearer, oauth_m2m, or none (none rejected in prod)",
+      "order": 6,
+      "enum": ["bearer", "oauth_m2m", "none"]
+    }
+  },
+  "success_message": "\n✔ A2A agent '{{.project_name}}' scaffold created.\n\nNext steps:\n  1. cd {{.project_name}}\n  2. cp .env.example .env.local && fill in values\n  3. uv sync && make unit\n  4. databricks bundle deploy -t dev\n  5. databricks bundle run a2a_agent_app -t dev\n\nThen read docs/DEVELOPMENT.md for the dev loop.\n"
+}

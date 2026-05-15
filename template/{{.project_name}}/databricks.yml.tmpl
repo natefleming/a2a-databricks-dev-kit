@@ -1,0 +1,66 @@
+bundle:
+  name: {{.project_name}}
+  engine: direct
+
+include:
+  - resources/*.yml
+
+variables:
+  agent_name:
+    description: "Public name of this A2A agent."
+    default: "{{.project_name}}"
+  agent_description:
+    description: "One-line description used in the Agent Card."
+    default: "{{.agent_description}}"
+  llm_endpoint:
+    description: "Databricks-hosted LLM serving endpoint."
+    default: "{{.llm_endpoint}}"
+  llm_ai_gateway:
+    description: "Route via AI Gateway?"
+    default: "false"
+  auth_mode:
+    description: "Inbound auth: bearer | oauth_m2m | none."
+    default: "{{.auth_mode}}"
+  catalog:
+    description: "Unity Catalog for agent artifacts."
+    default: "{{.catalog_name}}"
+  schema:
+    description: "Schema for agent artifacts."
+    default: "{{.schema_name}}"
+  bearer_secret_scope:
+    description: "Databricks secret scope for the inbound bearer token."
+    default: ""
+  bearer_secret_key:
+    description: "Secret key for the inbound bearer token."
+    default: ""
+
+artifacts:
+  default:
+    type: whl
+    build: uv build
+    path: .
+
+sync:
+  include:
+    - app.yaml
+    - requirements.txt
+    - src/**
+
+targets:
+  dev:
+    default: true
+    mode: development
+{{- if eq .auth_mode "none"}}
+    variables:
+      auth_mode: "none"
+{{- end}}
+
+  staging:
+    mode: production
+    variables:
+      auth_mode: "bearer"
+
+  prod:
+    mode: production
+    variables:
+      auth_mode: "bearer"

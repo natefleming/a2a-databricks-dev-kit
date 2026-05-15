@@ -1,0 +1,39 @@
+command:
+  - "uvicorn"
+  - "app.main:app"
+  - "--host"
+  - "0.0.0.0"
+  - "--port"
+  - "${DATABRICKS_APP_PORT:-8000}"
+
+env:
+  - name: A2A_AGENT_NAME
+    value: "{{.project_name}}"
+  - name: A2A_AGENT_DESCRIPTION
+    value: "{{.agent_description}}"
+  - name: A2A_AGENT_VERSION
+    value: "0.1.0"
+  - name: A2A_LLM_ENDPOINT
+    value: "{{.llm_endpoint}}"
+  - name: A2A_LLM_AI_GATEWAY
+    value: "false"
+  - name: A2A_AUTH_MODE
+    value: "{{.auth_mode}}"
+  - name: A2A_ENV
+    value: "dev"
+  - name: A2A_CATALOG
+    value: "{{.catalog_name}}"
+  - name: A2A_SCHEMA
+    value: "{{.schema_name}}"
+  - name: A2A_BEARER_SECRET_SCOPE
+    value: ""
+  - name: A2A_BEARER_SECRET_KEY
+    value: ""
+  - name: A2A_OAUTH_AUDIENCE
+    value: ""
+  - name: A2A_OAUTH_ISSUER
+    value: ""
+  - name: GEMINI_PROJECT_ID
+    value: ""
+  - name: GEMINI_LOCATION
+    value: "global"

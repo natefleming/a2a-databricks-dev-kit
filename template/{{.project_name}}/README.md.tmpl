@@ -1,0 +1,29 @@
+# {{.project_name}}
+
+{{.agent_description}}
+
+An A2A-protocol agent on Databricks, scaffolded from
+[a2a-databricks-dev-kit](https://github.com/<org>/a2a-databricks-dev-kit).
+
+## Deploy
+
+```bash
+make install
+make unit
+databricks bundle deploy -t dev
+databricks bundle run a2a_agent_app -t dev
+```
+
+## Configure
+
+Edit `app.yaml` env vars or set them in the Databricks Apps Settings UI:
+
+- `A2A_LLM_ENDPOINT={{.llm_endpoint}}`
+- `A2A_AUTH_MODE={{.auth_mode}}`
+- `A2A_CATALOG={{.catalog_name}}`
+- `A2A_SCHEMA={{.schema_name}}`
+
+## Customize
+
+The file you'll edit most is `src/app/agent.py`. See the dev kit's full docs:
+<https://github.com/<org>/a2a-databricks-dev-kit/blob/main/docs/DEVELOPMENT.md>

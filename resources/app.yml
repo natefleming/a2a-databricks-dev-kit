@@ -1,0 +1,32 @@
+# Databricks App resource for the A2A agent.
+#
+# `source_code_path: ../.` means the bundle ships the whole repo (app.yaml at root,
+# requirements.txt at root, src/ folder) as the App's source — exactly what the
+# Apps-from-Git path uses too. One layout, two deploy mechanisms.
+
+resources:
+  apps:
+    a2a_agent_app:
+      name: "${var.agent_name}-${bundle.target}"
+      description: "${var.agent_description}"
+      source_code_path: "../."
+      permissions:
+        - level: CAN_USE
+          group_name: "users"
+      user_api_scopes:
+        - "serving.serving-endpoints"
+
+  experiments:
+    a2a_agent_experiment:
+      name: "/Shared/a2a-agents/${var.agent_name}-${bundle.target}"
+
+  schemas:
+    a2a_agent_schema:
+      catalog_name: "${var.catalog}"
+      name: "${var.schema}"
+      grants:
+        - principal: "${resources.apps.a2a_agent_app.service_principal_client_id}"
+          privileges:
+            - USE_SCHEMA
+            - SELECT
+            - EXECUTE

@@ -1,0 +1,65 @@
+bundle:
+  name: a2a-databricks-agent
+  engine: direct
+
+include:
+  - resources/*.yml
+
+variables:
+  agent_name:
+    description: "Public name of this A2A agent."
+    default: "my-a2a-agent"
+  agent_description:
+    description: "One-line description used in the Agent Card."
+    default: "An A2A-protocol agent running on Databricks"
+  llm_endpoint:
+    description: "Databricks-hosted LLM serving endpoint."
+    default: "databricks-claude-sonnet-4-6"
+  llm_ai_gateway:
+    description: "Route via AI Gateway (/ai-gateway/mlflow/v1/chat/completions)?"
+    default: "false"
+  auth_mode:
+    description: "Inbound auth mode: bearer | oauth_m2m | none."
+    default: "bearer"
+  catalog:
+    description: "Unity Catalog for agent artifacts."
+    default: "main"
+  schema:
+    description: "Schema for agent artifacts."
+    default: "a2a_agents"
+  bearer_secret_scope:
+    description: "Databricks secret scope holding the inbound bearer token."
+    default: ""
+  bearer_secret_key:
+    description: "Secret key for the inbound bearer token."
+    default: ""
+
+artifacts:
+  default:
+    type: whl
+    build: uv build
+    path: .
+
+sync:
+  include:
+    - app.yaml
+    - requirements.txt
+    - src/**
+    - notebooks/**
+
+targets:
+  dev:
+    default: true
+    mode: development
+    variables:
+      auth_mode: "none"
+
+  staging:
+    mode: production
+    variables:
+      auth_mode: "bearer"
+
+  prod:
+    mode: production
+    variables:
+      auth_mode: "bearer"

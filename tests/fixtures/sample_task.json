@@ -1,0 +1,15 @@
+{
+  "jsonrpc": "2.0",
+  "id": "sample-1",
+  "method": "tasks/send",
+  "params": {
+    "message": {
+      "parts": [
+        {
+          "kind": "text",
+          "text": "What is Databricks Unity Catalog?"
+        }
+      ]
+    }
+  }
+}
