@@ -92,6 +92,14 @@ CREATE permission for your user.
 Either re-init from a current template, or edit `resources/app.yml` to put the
 experiment under your user path.
 
+### `uv sync` errors with `Could not find a version that satisfies the requirement ...`
+**Cause:** Your local Python is outside the kit's pinned range (`>=3.11,<3.12`).
+The kit pins to Python 3.11 specifically because that's what Databricks Apps runs;
+resolving against 3.12+ can pull in wheels that don't exist for 3.11 at deploy.
+
+**Fix:** Install Python 3.11 via `uv` and let the `.python-version` file at the
+repo root pick it up: `uv python install 3.11 && uv sync`.
+
 ### App crashes at startup: `Error: Invalid value for '--port': '${DATABRICKS_APP_PORT:-8000}' is not a valid integer.`
 **Cause:** Databricks Apps' list-form `command:` is exec'd directly without a shell,
 so `${VAR}` isn't expanded — it's passed to uvicorn as a literal string.

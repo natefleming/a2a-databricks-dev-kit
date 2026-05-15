@@ -10,7 +10,10 @@ expected output, and a "what just happened" paragraph.
 
 ### Prerequisites
 - macOS or Linux (Windows users: use WSL2)
-- Python ≥3.11
+- **Python 3.11 specifically** — Databricks Apps runs Python 3.11 in its runtime.
+  The kit pins `requires-python = ">=3.11,<3.12"` and ships a `.python-version` file
+  so `uv` selects the right interpreter automatically. Running on 3.12+ locally can
+  resolve to wheels that don't exist for 3.11 at deploy time.
 - [`uv`](https://github.com/astral-sh/uv) ≥0.4 — `curl -LsSf https://astral.sh/uv/install.sh | sh`
 - [`databricks` CLI](https://docs.databricks.com/aws/en/dev-tools/cli/install) ≥0.279.0
 - (Step 9 only) [`gcloud` CLI](https://cloud.google.com/sdk/docs/install)

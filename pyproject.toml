@@ -7,7 +7,7 @@ name = "a2a-databricks-dev-kit"
 version = "0.1.0"
 description = "Dev kit for building A2A-protocol agents that run on Databricks and register in Google Gemini Enterprise"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.12"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Nate Fleming", email = "nate.fleming@databricks.com" }]
 keywords = ["databricks", "a2a", "agent", "gemini", "mlflow"]
@@ -22,16 +22,18 @@ classifiers = [
 dependencies = [
     "a2a-sdk>=1.0,<1.1",
     "fastapi>=0.115,<0.120",
-    "uvicorn[standard]>=0.30,<0.40",
+    "uvicorn[standard]>=0.30,<0.50",
     "pydantic>=2.7,<3",
     "pydantic-settings>=2.4,<3",
     "httpx>=0.27,<1",
     "sse-starlette>=2.1,<3",
     "python-dotenv>=1.0,<2",
-    "databricks-sdk>=0.32,<1",
-    "mlflow[databricks]>=2.17.0,<3",
-    "databricks-langchain>=0.4,<1",
-    "langchain-openai>=0.2,<1",
+    "databricks-sdk>=0.108,<1",
+    "mlflow[databricks]>=3.0.0,<4",
+    "databricks-langchain>=0.19,<1",
+    "langchain>=1.2,<2",
+    "langchain-openai>=1.2,<2",
+    "langgraph>=1.1,<2",
     "loguru>=0.7,<1",
 ]
 
